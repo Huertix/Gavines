@@ -1,8 +1,9 @@
 package com.huertix.gavines;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,103 +16,145 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.huertix.gavines.helpers.DatabaseHelper;
+import com.huertix.gavines.models.Event;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+public class MainActivity extends Activity implements View.OnClickListener{
 
 
     public static final String TAG = "Gavines";
 
     private String baseUrl = " https://dweet.io/get/dweets/for/";
-    private Button recibidorBtn;
-    private Button trasteroBtn;
-    private Button trescantosPatioBtn;
-    private Button trescantosBuhardillaBtn;
-    private TextView recibidorTxt;
-    private TextView trasteroTxt;
-    private TextView trecantosPatioTxt;
-    private TextView trecantosBuhardillaTxt;
-    private TextView recibidorTxt1;
-    private TextView trasteroTxt1;
-    private TextView trecantosPatioTxt1;
-    private TextView trecantosBuhardillaTxt1;
+
+
     private RequestQueue requestQueue;
+
+    private DatabaseHelper databaseHelper;
+
+
+    private Button gavinesRecibidorBtn;
+    private Button gavinesTrasteroBtn;
+    private Button trescPatioBtn;
+    private Button trescBuharBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.main_activity);
 
-        recibidorBtn = (Button) findViewById(R.id.recibidor_btn);
-        trasteroBtn = (Button) findViewById(R.id.trastero_btn);
-        trescantosPatioBtn = (Button) findViewById(R.id.trescantos_patio_btn);
-        trescantosBuhardillaBtn = (Button) findViewById(R.id.trescantos_buhardilla_btn);
-        recibidorTxt = (TextView) findViewById(R.id.recibidor_text_view);
-        trasteroTxt = (TextView) findViewById(R.id.trastero_text_view);
-        trecantosPatioTxt = (TextView) findViewById(R.id.trescantos_patio_text_view);
-        trecantosBuhardillaTxt = (TextView) findViewById(R.id.trescantos_buhardilla_text_view);
-        recibidorTxt1 = (TextView) findViewById(R.id.recibidor_text_view_1);
-        trasteroTxt1 = (TextView) findViewById(R.id.trastero_text_view_1);
-        trecantosPatioTxt1 = (TextView) findViewById(R.id.trescantos_patio_text_view_1);
-        trecantosBuhardillaTxt1 = (TextView) findViewById(R.id.trescantos_buhardilla_text_view_1);
-
-
-        recibidorBtn.setOnClickListener(this);
-        trasteroBtn.setOnClickListener(this);
-        trescantosPatioBtn.setOnClickListener(this);
-        trescantosBuhardillaBtn.setOnClickListener(this);
+        databaseHelper = new DatabaseHelper(this);
 
         requestQueue = Volley.newRequestQueue(this);
 
-        recibidorBtn.callOnClick();
-        trasteroBtn.callOnClick();
-        trescantosPatioBtn.callOnClick();
-        trescantosBuhardillaBtn.callOnClick();
+        this.updateValues();
+
+        gavinesRecibidorBtn = (Button) findViewById(R.id.gavines_recibidor_btn);
+        gavinesTrasteroBtn = (Button) findViewById(R.id.gavines_trastero_btn);
+        trescPatioBtn = (Button) findViewById(R.id.trescantos_patio_btn);
+        trescBuharBtn = (Button) findViewById(R.id.trescantos_buhardilla_btn);
+
+        gavinesRecibidorBtn.setOnClickListener(this);
+        gavinesTrasteroBtn.setOnClickListener(this);
+        trescPatioBtn.setOnClickListener(this);
+        trescBuharBtn.setOnClickListener(this);
+
+        gavinesRecibidorBtn.setText(LocationsEnum.GAVINES_RECIBIDOR.location());
+        gavinesTrasteroBtn.setText(LocationsEnum.GAVINES_TRASTERO.location());
+        trescPatioBtn.setText(LocationsEnum.TRESCANTOS_PATIO.location());
+        trescBuharBtn.setText(LocationsEnum.TRESCANTOS_BUHARDILLA.location());
+
+        updateTextViews();
 
     }
 
 
+    public void updateTextViews() {
+        TextView gavinesRecibidorTxT = (TextView) findViewById(R.id.gr_txt);
+
+        TextView gavinesTrasteroTxt = (TextView) findViewById(R.id.gt_txt);
+
+        TextView trescPatioTxt = (TextView) findViewById(R.id.tp_txt);
+
+        TextView trescBuahTxt = (TextView) findViewById(R.id.tb_txt);
+
+
+
+        Event gavinesRecibidorEvent = databaseHelper.getLastEventByLocation(LocationsEnum.GAVINES_RECIBIDOR.location());
+        Event gavinesTrasteroEvent = databaseHelper.getLastEventByLocation(LocationsEnum.GAVINES_TRASTERO.location());
+        Event trescPatioEvent = databaseHelper.getLastEventByLocation(LocationsEnum.TRESCANTOS_PATIO.location());
+        Event trescBuahEvent = databaseHelper.getLastEventByLocation(LocationsEnum.TRESCANTOS_BUHARDILLA.location());
+
+        gavinesRecibidorTxT.setText("Date: " + gavinesRecibidorEvent.getDate() + "\n"
+                + "Tmp: " + gavinesRecibidorEvent.getTemperature() + "^\n"
+                + "Humd: " + gavinesRecibidorEvent.getHumedity() + "%");
+
+
+        gavinesTrasteroTxt.setText("Date: " + gavinesTrasteroEvent.getDate() + "\n"
+                + "Tmp: " + gavinesTrasteroEvent.getTemperature() + "^\n"
+                + "Humd: " + gavinesTrasteroEvent.getHumedity() + "%");
+
+
+        trescPatioTxt.setText("Date: " + trescPatioEvent.getDate() + "\n"
+                + "Tmp: " + trescPatioEvent.getTemperature() + "^\n"
+                + "Humd: " + trescPatioEvent.getHumedity() + "%");
+
+
+        trescBuahTxt.setText("Date: " + trescBuahEvent.getDate() + "\n"
+                + "Tmp: " + trescBuahEvent.getTemperature() + "^\n"
+                + "Humd: " + trescBuahEvent.getHumedity() + "%");
+
+
+    }
+
     @Override
     public void onClick(View v) {
+
+        Intent intent = null;
+        String locationName = null;
+
         switch (v.getId())
         {
-            case R.id.recibidor_btn:
-                Log.d(TAG, "requested recibidor");
-                updateValues("gavines-recibidor");
-                recibidorTxt.setText("Loading...");
-                recibidorTxt1.setText("");
-
+            case R.id.gavines_recibidor_btn:
+                intent = new Intent(this, GavinesRecibidorActivity.class);
+                locationName = LocationsEnum.GAVINES_RECIBIDOR.location();
+                intent.putExtra("location_name", locationName);
+                startActivity(intent);
                 break;
-            case R.id.trastero_btn:
-                Log.d(TAG, "requested trastero");
-                updateValues("gavines-trastero");
-                trasteroTxt.setText("Loading...");
-                trasteroTxt.setText("");
-
+            case R.id.gavines_trastero_btn:
+                intent = new Intent(this, GavinesTrasteroActivity.class);
+                locationName = LocationsEnum.GAVINES_TRASTERO.location();
+                intent.putExtra("location_name", locationName);
+                startActivity(intent);
                 break;
             case R.id.trescantos_patio_btn:
-                Log.d(TAG, "requested trescantos patio");
-                updateValues("trescantos-patio");
-                trecantosPatioTxt.setText("Loading...");
-                trecantosPatioTxt.setText("");
-
+                intent = new Intent(this, TresCantosPatioActivity.class);
+                locationName = LocationsEnum.TRESCANTOS_PATIO.location();
+                intent.putExtra("location_name", locationName);
+                startActivity(intent);
                 break;
-
             case R.id.trescantos_buhardilla_btn:
-                Log.d(TAG, "requested trescantos buhardilla");
-                updateValues("trescantos-buhardilla");
-                trecantosBuhardillaTxt.setText("Loading...");
-                trecantosBuhardillaTxt.setText("");
-
-
+                intent = new Intent(this, TresCantosBuhardillaActivity.class);
+                locationName = LocationsEnum.TRESCANTOS_BUHARDILLA.location();
+                intent.putExtra("location_name", locationName);
+                startActivity(intent);
                 break;
         }
     }
 
-    private void updateValues(final String location) {
+    private void updateValues() {
+
+        for (LocationsEnum location : LocationsEnum.values()) {
+            this.requestEvents(location.location());
+        }
+    }
+
+    private void requestEvents(final String location) {
         String url = baseUrl + location;
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -123,38 +166,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (response.length() > 0) {
                             Log.d(TAG, response.toString());
                             try {
-                                JSONObject values = response.getJSONArray("with").getJSONObject(0);
-                                JSONObject values1 = response.getJSONArray("with").getJSONObject(4);
-                                String date = values.getString("created").substring(0,19).replace("T"," ");
-                                String date1 = values1.getString("created").substring(0,19).replace("T"," ");
-                                JSONObject content = values.getJSONObject("content");
-                                JSONObject content1 = values.getJSONObject("content");
-                                Double tmp = content.getDouble("temperatura");
-                                Double tmp1 = content1.getDouble("temperatura");
-                                Double humedad = content.getDouble("humedad");
-                                Double humedad1 = content1.getDouble("humedad");
 
-                                if (location.equals("gavines-recibidor")) {
-                                    recibidorTxt.setText( date + " TMP: " + Double.toString(tmp) + " HUM: " + Double.toString(humedad) + "%");
-                                    recibidorTxt1.setText( date1 + " TMP: " + Double.toString(tmp1) + " HUM: " + Double.toString(humedad1) + "%");
+                                int totalRecords = response.getJSONArray("with").length();
+
+                                for (int index=0; index < totalRecords; index++) {
+
+                                    JSONObject values = response.getJSONArray("with").getJSONObject(index);
+                                    String date = values.getString("created").substring(0,19).replace("T"," ");
+                                    JSONObject content = values.getJSONObject("content");
+                                    Double tmp = content.getDouble("temperatura");
+                                    Double humedad = content.getDouble("humedad");
+
+                                    Event event = new Event(location, date, humedad, tmp);
+
+                                    databaseHelper.createEvent(event);
                                 }
 
-                                if (location.equals("gavines-trastero")) {
-                                    trasteroTxt.setText( date + " TMP: " + Double.toString(tmp) + " HUM: " + Double.toString(humedad) + "%");
-                                    trasteroTxt1.setText( date1 + " TMP: " + Double.toString(tmp1) + " HUM: " + Double.toString(humedad1) + "%");
-                                }
 
-                                if (location.equals("trescantos-patio")) {
-                                    trecantosPatioTxt.setText( date + " TMP: " + Double.toString(tmp) + " HUM: " + Double.toString(humedad) + "%");
-                                    trecantosPatioTxt1.setText( date1 + " TMP: " + Double.toString(tmp1) + " HUM: " + Double.toString(humedad1) + "%");
-
-                                }
-
-                                if (location.equals("trescantos-buhardilla")) {
-                                    trecantosBuhardillaTxt.setText( date + " TMP: " + Double.toString(tmp) + " HUM: " + Double.toString(humedad) + "%");
-                                    trecantosBuhardillaTxt1.setText( date1 + " TMP: " + Double.toString(tmp1) + " HUM: " + Double.toString(humedad1) + "%");
-
-                                }
 
 
                             } catch (JSONException e) {

@@ -21,6 +21,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".GavinesRecibidorActivity">
+        </activity>
+        <activity android:name=".GavinesTrasteroActivity">
+        </activity>
+        <activity android:name=".TresCantosPatioActivity">
+        </activity>
+        <activity android:name=".TresCantosBuhardillaActivity">
+        </activity>
     </application>
 
 </manifest>
